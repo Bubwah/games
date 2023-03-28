@@ -20,12 +20,13 @@ pygame.display.set_caption('A bit Racey')
 clock = pygame.time.Clock()
 
 carImg = pygame.image.load('racecar.png')
+carImg = pygame.transform.scale(carImg, (100,100))
 DEFAULT_IMAGE_SIZE = (100, 100)
 start_Img = pygame.image.load("start_button.png")
-start_Img = pygame.transform.scale(start_Img, DEFAULT_IMAGE_SIZE)
+
 
 exit_Img = pygame.image.load("exit_button.png")
-exit_Img = pygame.transform.scale(exit_Img, DEFAULT_IMAGE_SIZE)
+
 def things_dodged(count):
     font = pygame.font.SysFont(None, 25)
     text = font.render("Dodged: " + str(count), True, black)
@@ -62,16 +63,27 @@ def crash():
     message_display('You Crashed')
 
 class Button():
-    def __init__(self, x, y, image):
-        self.image = image
+    def __init__(self, x, y, image, scale):
+        width = image.get_width()
+        height = image.get_height()
+        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
         self.rect = self.image.get_rect()
         self.rect.topleft = (x,y)
-
+        self.clicked = False
     def draw(self):
-        gameDisplay.blit(self.image, (self.rect.x, self.rect.y))
+        action = False
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                action = True
+                self.clicked = True
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
 
-start_button = Button(100,400,start_Img)
-exit_button = Button(450,400,exit_Img)
+        gameDisplay.blit(self.image, (self.rect.x, self.rect.y))
+        return action
+start_button = Button(450,400,start_Img, 0.20)
+exit_button = Button(100,400,exit_Img, 0.20)
 def game_intro():
     intro = True
 
@@ -87,8 +99,11 @@ def game_intro():
         TextSurf, TextRect = text_objects("A bit Racey", largeText)
         TextRect.center = ((display_width / 2), (display_height / 2))
         gameDisplay.blit(TextSurf, TextRect)
-        start_button.draw()
-        exit_button.draw()
+        if start_button.draw():
+            game_loop()
+        if exit_button.draw():
+            pygame.quit()
+
         pygame.display.update()
         clock.tick(15)
 
@@ -159,6 +174,6 @@ def game_loop():
 
 
 game_intro()
-game_loop()
+
 pygame.quit()
 quit()
