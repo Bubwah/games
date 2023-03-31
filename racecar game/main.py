@@ -1,6 +1,9 @@
 import pygame
 import time
 import random
+import button
+from pathlib import Path
+import os
 
 pygame.init()
 
@@ -18,14 +21,17 @@ car_width = 73
 gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption('A bit Racey')
 clock = pygame.time.Clock()
-
+obstacleImg = pygame.image.load("obstacle.png")
+obstacleImg = pygame.transform.scale(obstacleImg, (100,100))
 carImg = pygame.image.load('racecar.png')
 carImg = pygame.transform.scale(carImg, (100,100))
 DEFAULT_IMAGE_SIZE = (100, 100)
 start_Img = pygame.image.load("start_button.png")
-
+#obstacleImg.rect = obstacleImg.get_rect()
+#obstacleImg.rect.xy = (x,y)
 
 exit_Img = pygame.image.load("exit_button.png")
+
 
 def things_dodged(count):
     font = pygame.font.SysFont(None, 25)
@@ -56,52 +62,58 @@ def message_display(text):
 
     time.sleep(2)
 
-    game_loop()
 
 
 def crash():
     message_display('You Crashed')
 
-class Button():
-    def __init__(self, x, y, image, scale):
-        width = image.get_width()
-        height = image.get_height()
-        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x,y)
-        self.clicked = False
-    def draw(self):
-        action = False
-        pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                action = True
-                self.clicked = True
-        if pygame.mouse.get_pressed()[0] == 0:
-            self.clicked = False
+def high_score(dodged):
+    with open('highscore.txt', "r") as f:
+        highscore_lines = f.readlines()[0]
 
-        gameDisplay.blit(self.image, (self.rect.x, self.rect.y))
-        return action
-start_button = Button(450,400,start_Img, 0.20)
-exit_button = Button(100,400,exit_Img, 0.20)
+    with open("highscore.txt", "w") as v:
+        if dodged >= int(highscore_lines):
+            v.write(str(dodged))
+        else:
+            v.write(highscore_lines)
+
 def game_intro():
     intro = True
 
     while intro:
+        gameDisplay.fill(white)
+        start_button = button.Button(450, 400, start_Img, 0.20, gameDisplay)
+        exit_button = button.Button(100, 400, exit_Img, 0.04, gameDisplay)
+
         for event in pygame.event.get():
             print(event)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-
-        gameDisplay.fill(white)
+        smallText = pygame.font.Font('freesansbold.ttf', 50)
         largeText = pygame.font.Font('freesansbold.ttf', 115)
         TextSurf, TextRect = text_objects("A bit Racey", largeText)
         TextRect.center = ((display_width / 2), (display_height / 2))
         gameDisplay.blit(TextSurf, TextRect)
-        if start_button.draw():
+
+
+
+
+
+        if not Path("./highscore.txt"):
+            print("is file")
+
+        else:
+            with open("highscore.txt")as f:
+                lines = f.readlines()
+            text = smallText.render(str(lines), True, black)
+            gameDisplay.blit(text, [300,100])
+            pygame.display.update()
+
+        if start_button.clicked:
             game_loop()
-        if exit_button.draw():
+
+        if exit_button.clicked:
             pygame.quit()
 
         pygame.display.update()
@@ -119,9 +131,7 @@ def game_loop():
     thing_speed = 4
     thing_width = 100
     thing_height = 100
-
-    thingCount = 1
-
+    global dodged
     dodged = 0
 
     gameExit = False
@@ -153,7 +163,10 @@ def game_loop():
         things_dodged(dodged)
 
         if x > display_width - car_width or x < 0:
+
             crash()
+            high_score(dodged)
+            gameExit = True
 
         if thing_starty > display_height:
             thing_starty = 0 - thing_height
@@ -165,9 +178,13 @@ def game_loop():
         if y < thing_starty + thing_height:
             print('y crossover')
 
-            if x > thing_startx and x < thing_startx + thing_width or x + car_width > thing_startx and x + car_width < thing_startx + thing_width:
+            if thing_startx < x < thing_startx + thing_width \
+                    or thing_startx < x + car_width < thing_startx + thing_width:
                 print('x crossover')
+
                 crash()
+                high_score(dodged)
+                gameExit = True
 
         pygame.display.update()
         clock.tick(60)
