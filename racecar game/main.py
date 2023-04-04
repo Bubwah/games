@@ -3,7 +3,7 @@ import time
 import random
 import button
 from pathlib import Path
-import os
+from PIL import Image
 
 pygame.init()
 
@@ -23,12 +23,13 @@ pygame.display.set_caption('A bit Racey')
 clock = pygame.time.Clock()
 obstacleImg = pygame.image.load("obstacle.png")
 obstacleImg = pygame.transform.scale(obstacleImg, (100,100))
+obstacleImg_width = pygame.Surface.get_width(obstacleImg)
+obstacleImg_height = pygame.Surface.get_height(obstacleImg)
 carImg = pygame.image.load('racecar.png')
 carImg = pygame.transform.scale(carImg, (100,100))
 DEFAULT_IMAGE_SIZE = (100, 100)
 start_Img = pygame.image.load("start_button.png")
-#obstacleImg.rect = obstacleImg.get_rect()
-#obstacleImg.rect.xy = (x,y)
+
 
 exit_Img = pygame.image.load("exit_button.png")
 
@@ -39,13 +40,15 @@ def things_dodged(count):
     gameDisplay.blit(text, (0, 0))
 
 
-def things(thingx, thingy, thingw, thingh, color):
-    pygame.draw.rect(gameDisplay, color, [thingx, thingy, thingw, thingh])
+ #def things(thingx, thingy, thingw, thingh, color):
+    #pygame.draw.rect(gameDisplay, color, [thingx, thingy, thingw, thingh])
 
 
 def car(x, y):
     gameDisplay.blit(carImg, (x, y))
 
+def obstacle(obstacleImg, thing_startx, thing_starty):
+    gameDisplay.blit(obstacleImg, (thing_startx, thing_starty))
 
 def text_objects(text, font):
     textSurface = font.render(text, True, black)
@@ -125,12 +128,12 @@ def game_loop():
     y = (display_height * 0.8)
 
     x_change = 0
-
+    thing = obstacleImg
     thing_startx = random.randrange(0, display_width)
     thing_starty = -600
     thing_speed = 4
-    thing_width = 100
-    thing_height = 100
+    #thing_width = 100
+    #thing_height = 100
     global dodged
     dodged = 0
 
@@ -156,7 +159,7 @@ def game_loop():
         x += x_change
         gameDisplay.fill(white)
 
-        things(thing_startx, thing_starty, thing_width, thing_height, block_color)
+        obstacle(obstacleImg, thing_startx, thing_starty)
 
         thing_starty += thing_speed
         car(x, y)
@@ -169,17 +172,17 @@ def game_loop():
             gameExit = True
 
         if thing_starty > display_height:
-            thing_starty = 0 - thing_height
+            thing_starty = 0 - obstacleImg_height
             thing_startx = random.randrange(0, display_width)
             dodged += 1
             thing_speed += 1
-            thing_width += (dodged * 1.2)
 
-        if y < thing_starty + thing_height:
+
+        if y < thing_starty + obstacleImg_height:
             print('y crossover')
 
-            if thing_startx < x < thing_startx + thing_width \
-                    or thing_startx < x + car_width < thing_startx + thing_width:
+            if thing_startx < x < thing_startx + obstacleImg_width \
+                    or thing_startx < x + car_width < thing_startx + obstacleImg_width:
                 print('x crossover')
 
                 crash()
