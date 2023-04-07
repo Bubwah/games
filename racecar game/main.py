@@ -7,7 +7,7 @@ from PIL import Image
 
 pygame.init()
 
-display_width = 800
+display_width = 600
 display_height = 600
 
 black = (0, 0, 0)
@@ -21,6 +21,8 @@ car_width = 73
 gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption('A bit Racey')
 clock = pygame.time.Clock()
+bg = pygame.image.load("road.png").convert()
+bg = pygame.transform.scale(bg, (600, 400))
 obstacleImg = pygame.image.load("obstacle.png")
 obstacleImg = pygame.transform.scale(obstacleImg, (100,100))
 obstacleImg_width = pygame.Surface.get_width(obstacleImg)
@@ -56,7 +58,7 @@ def text_objects(text, font):
 
 
 def message_display(text):
-    largeText = pygame.font.Font('freesansbold.ttf', 115)
+    largeText = pygame.font.Font('freesansbold.ttf', 85)
     TextSurf, TextRect = text_objects(text, largeText)
     TextRect.center = ((display_width / 2), (display_height / 2))
     gameDisplay.blit(TextSurf, TextRect)
@@ -85,8 +87,8 @@ def game_intro():
 
     while intro:
         gameDisplay.fill(white)
-        start_button = button.Button(450, 400, start_Img, 0.20, gameDisplay)
-        exit_button = button.Button(100, 400, exit_Img, 0.04, gameDisplay)
+        start_button = button.Button(350, 400, start_Img, 0.20, gameDisplay)
+        exit_button = button.Button(75, 400, exit_Img, 0.04, gameDisplay)
 
         for event in pygame.event.get():
             print(event)
@@ -94,7 +96,7 @@ def game_intro():
                 pygame.quit()
                 quit()
         smallText = pygame.font.Font('freesansbold.ttf', 50)
-        largeText = pygame.font.Font('freesansbold.ttf', 115)
+        largeText = pygame.font.Font('freesansbold.ttf', 85)
         TextSurf, TextRect = text_objects("A bit Racey", largeText)
         TextRect.center = ((display_width / 2), (display_height / 2))
         gameDisplay.blit(TextSurf, TextRect)
@@ -109,8 +111,8 @@ def game_intro():
         else:
             with open("highscore.txt")as f:
                 lines = f.readlines()
-            text = smallText.render(str(lines), True, black)
-            gameDisplay.blit(text, [300,100])
+            text = smallText.render(f"Highscore: {lines[0]}", True, black)
+            gameDisplay.blit(text, [150, 100])
             pygame.display.update()
 
         if start_button.clicked:
@@ -129,7 +131,7 @@ def game_loop():
 
     x_change = 0
     thing = obstacleImg
-    thing_startx = random.randrange(0, display_width)
+    thing_startx = random.randrange(0, display_width - 100)
     thing_starty = -600
     thing_speed = 4
     #thing_width = 100
@@ -157,7 +159,8 @@ def game_loop():
                     x_change = 0
 
         x += x_change
-        gameDisplay.fill(white)
+        gameDisplay.blit(bg, (0,0))
+        gameDisplay.blit(bg, (0, 400))
 
         obstacle(obstacleImg, thing_startx, thing_starty)
 
@@ -173,9 +176,9 @@ def game_loop():
 
         if thing_starty > display_height:
             thing_starty = 0 - obstacleImg_height
-            thing_startx = random.randrange(0, display_width)
+            thing_startx = random.randrange(0, display_width - 100)
             dodged += 1
-            thing_speed += 1
+            thing_speed += 0.5
 
 
         if y < thing_starty + obstacleImg_height:
