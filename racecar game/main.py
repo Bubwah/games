@@ -7,8 +7,8 @@ from PIL import Image
 
 pygame.init()
 
-display_width = 600
-display_height = 600
+display_width = 700
+display_height = 700
 
 black = (0, 0, 0)
 white = (255, 255, 255)
@@ -21,18 +21,20 @@ car_width = 73
 gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption('A bit Racey')
 clock = pygame.time.Clock()
-bg = pygame.image.load("road.png").convert()
-bg = pygame.transform.scale(bg, (600, 400))
-obstacleImg = pygame.image.load("obstacle.png")
-obstacleImg = pygame.transform.scale(obstacleImg, (100,100))
+bg = pygame.image.load("road2.png").convert()
+bg = pygame.transform.scale(bg, (700, 350))
+obstacleImg = pygame.image.load("racecar.png")
+obstacleImg = pygame.transform.scale(obstacleImg, (100,140))
+obstacleImg = pygame.transform.rotate(obstacleImg, 180)
 obstacleImg_width = pygame.Surface.get_width(obstacleImg)
 obstacleImg_height = pygame.Surface.get_height(obstacleImg)
 carImg = pygame.image.load('racecar.png')
-carImg = pygame.transform.scale(carImg, (100,100))
+carImg = pygame.transform.scale(carImg, (100,140))
 DEFAULT_IMAGE_SIZE = (100, 100)
 start_Img = pygame.image.load("start_button.png")
-
-
+bg_height = bg.get_height()
+tiles = display_height / bg_height
+tiles = int(tiles) +1
 exit_Img = pygame.image.load("exit_button.png")
 
 
@@ -126,11 +128,11 @@ def game_intro():
 
 
 def game_loop():
+    scroll = 0
     x = (display_width * 0.45)
-    y = (display_height * 0.8)
+    y = (display_height * 0.75)
 
     x_change = 0
-    thing = obstacleImg
     thing_startx = random.randrange(0, display_width - 100)
     thing_starty = -600
     thing_speed = 4
@@ -159,9 +161,12 @@ def game_loop():
                     x_change = 0
 
         x += x_change
-        gameDisplay.blit(bg, (0,0))
-        gameDisplay.blit(bg, (0, 400))
+        for i in range(tiles-2, -2, -1):
+            gameDisplay.blit(bg, (0, i * bg_height + scroll))
 
+        scroll += 3
+        if abs(scroll) > bg_height:
+            scroll = 0
         obstacle(obstacleImg, thing_startx, thing_starty)
 
         thing_starty += thing_speed
