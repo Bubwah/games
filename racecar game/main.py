@@ -1,9 +1,9 @@
-import pygame
-import time
-import random
 import button
+import pygame
+import random
+import time
+
 from pathlib import Path
-from PIL import Image
 
 pygame.init()
 
@@ -13,7 +13,7 @@ display_height = 700
 black = (0, 0, 0)
 white = (255, 255, 255)
 red = (255, 0, 0)
-
+green = (0, 200, 0)
 block_color = (53, 115, 255)
 
 car_width = 73
@@ -21,21 +21,27 @@ car_width = 73
 gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption('A bit Racey')
 clock = pygame.time.Clock()
+
 bg = pygame.image.load("road2.png").convert()
 bg = pygame.transform.scale(bg, (700, 350))
+bg_height = bg.get_height()
+
 obstacleImg = pygame.image.load("racecar.png")
-obstacleImg = pygame.transform.scale(obstacleImg, (100,140))
-obstacleImg = pygame.transform.rotate(obstacleImg, 180)
+obstacleImg = pygame.transform.rotate(pygame.transform.scale(obstacleImg, (100, 140)), 180)
 obstacleImg_width = pygame.Surface.get_width(obstacleImg)
 obstacleImg_height = pygame.Surface.get_height(obstacleImg)
+
 carImg = pygame.image.load('racecar.png')
-carImg = pygame.transform.scale(carImg, (100,140))
-DEFAULT_IMAGE_SIZE = (100, 100)
+carImg = pygame.transform.scale(carImg, (100, 140))
+
 start_Img = pygame.image.load("start_button.png")
-bg_height = bg.get_height()
-tiles = display_height / bg_height
-tiles = int(tiles) +1
 exit_Img = pygame.image.load("exit_button.png")
+
+tiles = display_height / bg_height
+tiles = int(tiles) + 1
+
+introImg = pygame.image.load("introbg.png")
+introImg = pygame.transform.scale(introImg, (700, 700))
 
 
 def things_dodged(count):
@@ -44,18 +50,16 @@ def things_dodged(count):
     gameDisplay.blit(text, (0, 0))
 
 
- #def things(thingx, thingy, thingw, thingh, color):
-    #pygame.draw.rect(gameDisplay, color, [thingx, thingy, thingw, thingh])
-
-
 def car(x, y):
     gameDisplay.blit(carImg, (x, y))
+
 
 def obstacle(obstacleImg, thing_startx, thing_starty):
     gameDisplay.blit(obstacleImg, (thing_startx, thing_starty))
 
-def text_objects(text, font):
-    textSurface = font.render(text, True, black)
+
+def text_objects(text, font, color):
+    textSurface = font.render(text, True, green)
     return textSurface, textSurface.get_rect()
 
 
@@ -70,11 +74,11 @@ def message_display(text):
     time.sleep(2)
 
 
-
 def crash():
     message_display('You Crashed')
 
-def high_score(dodged):
+
+def display_highscore(dodged):
     with open('highscore.txt', "r") as f:
         highscore_lines = f.readlines()[0]
 
@@ -84,13 +88,14 @@ def high_score(dodged):
         else:
             v.write(highscore_lines)
 
+
 def game_intro():
     intro = True
 
     while intro:
-        gameDisplay.fill(white)
-        start_button = button.Button(350, 400, start_Img, 0.20, gameDisplay)
-        exit_button = button.Button(75, 400, exit_Img, 0.04, gameDisplay)
+        gameDisplay.blit(introImg, (0, 0))
+        start_button = button.Button(400, 400, start_Img, 0.20, gameDisplay)
+        exit_button = button.Button(200, 400, exit_Img, 0.04, gameDisplay)
 
         for event in pygame.event.get():
             print(event)
@@ -99,13 +104,10 @@ def game_intro():
                 quit()
         smallText = pygame.font.Font('freesansbold.ttf', 50)
         largeText = pygame.font.Font('freesansbold.ttf', 85)
-        TextSurf, TextRect = text_objects("A bit Racey", largeText)
+        TextSurf, TextRect = text_objects("Traffic Dodge", largeText, green)
+        #TextSurf, TextRect = text_objects(largeText.render("A bit Racey", True, green), largeText)
         TextRect.center = ((display_width / 2), (display_height / 2))
         gameDisplay.blit(TextSurf, TextRect)
-
-
-
-
 
         if not Path("./highscore.txt"):
             print("is file")
@@ -113,8 +115,8 @@ def game_intro():
         else:
             with open("highscore.txt")as f:
                 lines = f.readlines()
-            text = smallText.render(f"Highscore: {lines[0]}", True, black)
-            gameDisplay.blit(text, [150, 100])
+            text = smallText.render(f"Highscore: {lines[0]}", True, green)
+            gameDisplay.blit(text, [200, 100])
             pygame.display.update()
 
         if start_button.clicked:
@@ -136,9 +138,6 @@ def game_loop():
     thing_startx = random.randrange(0, display_width - 100)
     thing_starty = -600
     thing_speed = 4
-    #thing_width = 100
-    #thing_height = 100
-    global dodged
     dodged = 0
 
     gameExit = False
@@ -176,7 +175,7 @@ def game_loop():
         if x > display_width - car_width or x < 0:
 
             crash()
-            high_score(dodged)
+            display_highscore(dodged)
             gameExit = True
 
         if thing_starty > display_height:
@@ -184,7 +183,6 @@ def game_loop():
             thing_startx = random.randrange(0, display_width - 100)
             dodged += 1
             thing_speed += 0.5
-
 
         if y < thing_starty + obstacleImg_height:
             print('y crossover')
@@ -194,7 +192,7 @@ def game_loop():
                 print('x crossover')
 
                 crash()
-                high_score(dodged)
+                display_highscore(dodged)
                 gameExit = True
 
         pygame.display.update()
