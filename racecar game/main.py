@@ -2,6 +2,7 @@ import button
 import pygame
 import random
 import time
+import random
 
 from pathlib import Path
 
@@ -10,11 +11,9 @@ pygame.init()
 display_width = 700
 display_height = 700
 
-black = (0, 0, 0)
-white = (255, 255, 255)
-red = (255, 0, 0)
+
 green = (0, 200, 0)
-block_color = (53, 115, 255)
+
 
 car_width = 73
 
@@ -40,22 +39,29 @@ exit_Img = pygame.image.load("exit_button.png")
 tiles = display_height / bg_height
 tiles = int(tiles) + 1
 
+truckImg = pygame.image.load('truck.png')
+truckImg = pygame.transform.scale(truckImg, (100, 180))
+
 introImg = pygame.image.load("introbg.png")
 introImg = pygame.transform.scale(introImg, (700, 700))
 
 
-def things_dodged(count):
+def draw_highscore(count):
     font = pygame.font.SysFont(None, 25)
-    text = font.render("Dodged: " + str(count), True, black)
+    text = font.render("Dodged: " + str(count), True, green)
     gameDisplay.blit(text, (0, 0))
 
 
-def car(x, y):
+def draw_car(x, y):
     gameDisplay.blit(carImg, (x, y))
 
 
-def obstacle(obstacleImg, thing_startx, thing_starty):
-    gameDisplay.blit(obstacleImg, (thing_startx, thing_starty))
+def draw_obstacle(thing_startx, thing_starty, obstacle_type):
+    if obstacle_type == "car":
+        img = obstacleImg
+    elif obstacle_type == "truck":
+        img = truckImg
+    gameDisplay.blit(img, (thing_startx, thing_starty))
 
 
 def text_objects(text, font, color):
@@ -63,9 +69,9 @@ def text_objects(text, font, color):
     return textSurface, textSurface.get_rect()
 
 
-def message_display(text):
+def message_display(text, color):
     largeText = pygame.font.Font('freesansbold.ttf', 85)
-    TextSurf, TextRect = text_objects(text, largeText)
+    TextSurf, TextRect = text_objects(text, largeText, green)
     TextRect.center = ((display_width / 2), (display_height / 2))
     gameDisplay.blit(TextSurf, TextRect)
 
@@ -75,7 +81,7 @@ def message_display(text):
 
 
 def crash():
-    message_display('You Crashed')
+    message_display('You Crashed', green)
 
 
 def display_highscore(dodged):
@@ -105,7 +111,7 @@ def game_intro():
         smallText = pygame.font.Font('freesansbold.ttf', 50)
         largeText = pygame.font.Font('freesansbold.ttf', 85)
         TextSurf, TextRect = text_objects("Traffic Dodge", largeText, green)
-        #TextSurf, TextRect = text_objects(largeText.render("A bit Racey", True, green), largeText)
+
         TextRect.center = ((display_width / 2), (display_height / 2))
         gameDisplay.blit(TextSurf, TextRect)
 
@@ -142,6 +148,8 @@ def game_loop():
 
     gameExit = False
 
+    obstacles = []
+
     while not gameExit:
 
         for event in pygame.event.get():
@@ -166,34 +174,48 @@ def game_loop():
         scroll += 3
         if abs(scroll) > bg_height:
             scroll = 0
-        obstacle(obstacleImg, thing_startx, thing_starty)
 
-        thing_starty += thing_speed
-        car(x, y)
-        things_dodged(dodged)
+        print(obstacles)
+
+        if len(obstacles) == 0:
+            if random.random() > 0.85:
+                obstacle_type = "truck"
+            else:
+                obstacle_type = "car"
+            obstacles.append([thing_startx, thing_starty, obstacle_type])
+
+        draw_car(x, y)
+
+        for obstacle_index in range(len(obstacles)):
+            obstacle = obstacles[obstacle_index]
+            draw_obstacle(obstacle[0], obstacle[1], obstacle[2])
+            obstacle[1] += thing_speed
+
+            if y < obstacle[1] + obstacleImg_height:
+                print('y crossover')
+
+                if obstacle[0] < x < obstacle[0] + obstacleImg_width \
+                        or thing_startx < x + car_width < obstacle[0] + obstacleImg_width:
+                    print('x crossover')
+
+                    crash()
+                    display_highscore(dodged)
+                    gameExit = True
+
+            if obstacle[1] > display_height:
+                del obstacles[obstacle_index]
+                thing_starty = 0 - obstacleImg_height
+                thing_startx = random.randrange(0, display_width - 100)
+                dodged += 1
+                thing_speed += 0.5
+
+        draw_highscore(dodged)
 
         if x > display_width - car_width or x < 0:
 
             crash()
             display_highscore(dodged)
             gameExit = True
-
-        if thing_starty > display_height:
-            thing_starty = 0 - obstacleImg_height
-            thing_startx = random.randrange(0, display_width - 100)
-            dodged += 1
-            thing_speed += 0.5
-
-        if y < thing_starty + obstacleImg_height:
-            print('y crossover')
-
-            if thing_startx < x < thing_startx + obstacleImg_width \
-                    or thing_startx < x + car_width < thing_startx + obstacleImg_width:
-                print('x crossover')
-
-                crash()
-                display_highscore(dodged)
-                gameExit = True
 
         pygame.display.update()
         clock.tick(60)
