@@ -46,11 +46,6 @@ class Racegame:
         self.introImg = pygame.image.load("introbg.png")
         self.introImg = pygame.transform.scale(self.introImg, (700, 700))
 
-    def things_dodged(self, count):
-        font = pygame.font.SysFont('arial', 25)
-        text = font.render("Dodged: " + str(count), True, self.green)
-        self.gameDisplay.blit(text, (0, 0))
-
     def draw_car(self, x, y):
         self.gameDisplay.blit(self.carImg, (x, y))
 
@@ -63,8 +58,8 @@ class Racegame:
         self.gameDisplay.blit(img, (thing_startx, thing_starty))
 
     def draw_text(self, text, font):
-        textSurface = font.render(text, True, self.green)
-        return textSurface, textSurface.get_rect()
+        text_surface = font.render(text, True, self.green)
+        return text_surface, text_surface.get_rect()
 
     def message_display(self, text):
         large_text = pygame.font.Font('freesansbold.ttf', 85)
@@ -131,7 +126,6 @@ class Racegame:
 
             pygame.display.update()
             self.clock.tick(15)
-
 
     def game_loop(self):
         scroll = 0

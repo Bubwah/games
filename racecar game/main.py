@@ -5,6 +5,7 @@ import pygame
 
 def main():
     racegame = Racegame()
+
     racegame.game_intro()
 
     pygame.quit()
