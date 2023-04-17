@@ -49,13 +49,14 @@ class Racegame:
     def draw_car(self, x, y):
         self.gameDisplay.blit(self.carImg, (x, y))
 
-    def draw_obstacle(self, thing_startx, thing_starty, obstacle_type):
+    def draw_obstacle(self, obstacle_x, obstacle_y, obstacle_type):
         if obstacle_type == "truck":
             img = self.truckImg
         else:
             # default obstacle is car
             img = self.obstacleImg
-        self.gameDisplay.blit(img, (thing_startx, thing_starty))
+        print(obstacle_x)
+        self.gameDisplay.blit(img, (obstacle_x, obstacle_y))
 
     def draw_text(self, text, font):
         text_surface = font.render(text, True, self.green)
@@ -131,9 +132,11 @@ class Racegame:
         scroll = 0
         x = (self.display_width * 0.45)
         y = (self.display_height * 0.75)
+        obstacle_x_list = [30, 160, 300, 440, 570]
 
         x_change = 0
-        obstacle_x = random.randrange(0, self.display_width - 100)
+        obstacle_x = random.choice(obstacle_x_list)
+
         obstacle_y = -600
 
         obstacle_speed = 4
@@ -196,7 +199,8 @@ class Racegame:
                 if obstacle[1] > self.display_height:
                     del obstacles[obstacle_index]
                     obstacle_y = 0 - self.obstacleImg_height
-                    obstacle_x = random.randrange(0, self.display_width - 100)
+                    obstacle_x = random.choice(obstacle_x_list)
+
                     dodged += 1
                     obstacle_speed += 0.5
 
