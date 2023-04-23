@@ -46,6 +46,8 @@ class Racegame:
         self.introImg = pygame.image.load("introbg.png")
         self.introImg = pygame.transform.scale(self.introImg, (700, 700))
 
+        self.current_obstacles = []
+        self.delete_obstacles = [];
     def draw_car(self, x, y):
         self.gameDisplay.blit(self.carImg, (x, y))
 
@@ -55,7 +57,7 @@ class Racegame:
         else:
             # default obstacle is car
             img = self.obstacleImg
-        print(obstacle_x)
+
         self.gameDisplay.blit(img, (obstacle_x, obstacle_y))
 
     def draw_text(self, text, font):
@@ -135,9 +137,6 @@ class Racegame:
         obstacle_x_list = [30, 160, 300, 440, 570]
 
         x_change = 0
-        obstacle_x = random.choice(obstacle_x_list)
-
-        obstacle_y = -600
 
         obstacle_speed = 4
         dodged = 0
@@ -171,12 +170,13 @@ class Racegame:
             if abs(scroll) > self.bg_height:
                 scroll = 0
 
-            if len(obstacles) == 0:
+            spawnrate = 0.2
+            if random.random() < spawnrate and len(obstacles) < 2:
                 if random.random() > 0.85:
                     obstacle_type = "truck"
                 else:
                     obstacle_type = "car"
-                obstacles.append([obstacle_x, obstacle_y, obstacle_type])
+                obstacles.append([random.choice(obstacle_x_list), -600, obstacle_type])
 
             self.draw_car(x, y)
 
@@ -186,25 +186,30 @@ class Racegame:
                 obstacle[1] += obstacle_speed
 
                 if y < obstacle[1] + self.obstacleImg_height:
-                    print('y crossover')
-
                     if obstacle[0] < x < obstacle[0] + self.obstacleImg_width \
-                            or obstacle_x < x + self.car_width < obstacle[0] + self.obstacleImg_width:
-                        print('x crossover')
+                            or obstacle[0] < x + self.car_width < obstacle[0] + self.obstacleImg_width:
 
                         self.crash()
                         self.display_highscore(dodged)
                         game_exit = True
 
                 if obstacle[1] > self.display_height:
-                    del obstacles[obstacle_index]
-                    obstacle_y = 0 - self.obstacleImg_height
-                    obstacle_x = random.choice(obstacle_x_list)
+                    self.delete_obstacles.append(obstacle_index)
 
                     dodged += 1
-                    obstacle_speed += 0.5
+                    obstacle_speed_change = 0.5
 
+                    if obstacle_speed == 16:
+                        obstacle_speed_change = 0
+
+                    obstacle_speed += obstacle_speed_change
+                    print(obstacle_speed)
             self.draw_highscore(dodged)
+
+            for delete_index in range(len(self.delete_obstacles)):
+                del obstacles[delete_index]
+
+            self.delete_obstacles = []
 
             if x > self.display_width - self.car_width or x < 0:
                 self.crash()
