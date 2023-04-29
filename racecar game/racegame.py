@@ -206,7 +206,8 @@ class Racegame:
                     print(obstacle_speed)
             self.draw_highscore(dodged)
 
-            for delete_index in range(len(self.delete_obstacles)):
+            for delete_index in self.delete_obstacles[::-1]:
+                print(delete_index, self.delete_obstacles, obstacles)
                 del obstacles[delete_index]
 
             self.delete_obstacles = []
