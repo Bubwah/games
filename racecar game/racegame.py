@@ -46,8 +46,8 @@ class Racegame:
         self.introImg = pygame.image.load("introbg.png")
         self.introImg = pygame.transform.scale(self.introImg, (700, 700))
 
-        self.current_obstacles = []
-        self.delete_obstacles = [];
+        self.delete_obstacles = []
+
     def draw_car(self, x, y):
         self.gameDisplay.blit(self.carImg, (x, y))
 
