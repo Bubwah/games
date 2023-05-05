@@ -190,7 +190,7 @@ class Racegame:
                     print('y crossover')
 
                     if obstacle[0] < x < obstacle[0] + obstacle_width \
-                            or obstacle_x < x + self.car_width < obstacle[0] + obstacle_width:
+                            or obstacle[0] < x + self.car_width < obstacle[0] + obstacle_width:
                         print('x crossover')
 
                         self.crash()
@@ -198,9 +198,7 @@ class Racegame:
                         game_exit = True
 
                 if obstacle[1] > self.display_height:
-                    del obstacles[obstacle_index]
-                    obstacle_y = 0 - obstacle_height
-                    obstacle_x = random.choice(obstacle_x_list)
+                    self.delete_obstacles.append(obstacle_index)
 
                     dodged += 1
                     obstacle_speed_change = 0.5
@@ -219,9 +217,9 @@ class Racegame:
             self.delete_obstacles = []
 
             if x > self.display_width - self.car_width or x < 0:
-                self.crash()
-                self.display_highscore(dodged)
-                game_exit = True
+                    self.crash()
+                    self.display_highscore(dodged)
+                    game_exit = True
 
             pygame.display.update()
             self.clock.tick(60)
