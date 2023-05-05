@@ -28,8 +28,6 @@ class Racegame:
 
         self.obstacleImg = pygame.image.load("racecar.png")
         self.obstacleImg = pygame.transform.rotate(pygame.transform.scale(self.obstacleImg, (100, 140)), 180)
-        self.obstacleImg_width = pygame.Surface.get_width(self.obstacleImg)
-        self.obstacleImg_height = pygame.Surface.get_height(self.obstacleImg)
 
         self.carImg = pygame.image.load('racecar.png')
         self.carImg = pygame.transform.scale(self.carImg, (100, 140))
@@ -135,6 +133,8 @@ class Racegame:
         x = (self.display_width * 0.45)
         y = (self.display_height * 0.75)
         obstacle_x_list = [30, 160, 300, 440, 570]
+        obstacle_dims = {"truck": (self.truckImg.get_width(), self.truckImg.get_height()),
+                         "car": (self.obstacleImg.get_width(), self.obstacleImg.get_height())}
 
         x_change = 0
 
@@ -184,17 +184,23 @@ class Racegame:
                 obstacle = obstacles[obstacle_index]
                 self.draw_obstacle(obstacle[0], obstacle[1], obstacle[2])
                 obstacle[1] += obstacle_speed
+                obstacle_width, obstacle_height = obstacle_dims[obstacle[2]]
 
-                if y < obstacle[1] + self.obstacleImg_height:
-                    if obstacle[0] < x < obstacle[0] + self.obstacleImg_width \
-                            or obstacle[0] < x + self.car_width < obstacle[0] + self.obstacleImg_width:
+                if y < obstacle[1] + obstacle_height:
+                    print('y crossover')
+
+                    if obstacle[0] < x < obstacle[0] + obstacle_width \
+                            or obstacle_x < x + self.car_width < obstacle[0] + obstacle_width:
+                        print('x crossover')
 
                         self.crash()
                         self.display_highscore(dodged)
                         game_exit = True
 
                 if obstacle[1] > self.display_height:
-                    self.delete_obstacles.append(obstacle_index)
+                    del obstacles[obstacle_index]
+                    obstacle_y = 0 - obstacle_height
+                    obstacle_x = random.choice(obstacle_x_list)
 
                     dodged += 1
                     obstacle_speed_change = 0.5
