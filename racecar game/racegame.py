@@ -140,13 +140,13 @@ class Racegame:
 
         obstacle_speed = 4
         dodged = 0
-
+        spawnrate = min(0.01 + 0.5*dodged, 1)
         game_exit = False
 
         obstacles = []
 
         while not game_exit:
-
+            max_cars = min(dodged // 6 + 1, 3)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -170,8 +170,8 @@ class Racegame:
             if abs(scroll) > self.bg_height:
                 scroll = 0
 
-            spawnrate = 0.2
-            if random.random() < spawnrate and len(obstacles) < 2:
+
+            if random.random() < spawnrate and len(obstacles) < max_cars:
                 if random.random() > 0.85:
                     obstacle_type = "truck"
                 else:
@@ -203,11 +203,13 @@ class Racegame:
                     dodged += 1
                     obstacle_speed_change = 0.5
 
+
                     if obstacle_speed == 16:
                         obstacle_speed_change = 0
 
+
                     obstacle_speed += obstacle_speed_change
-                    print(obstacle_speed)
+
             self.draw_highscore(dodged)
 
             for delete_index in self.delete_obstacles[::-1]:
