@@ -1,5 +1,6 @@
 import pygame
 import button
+import random
 pygame.init()
 
 
@@ -24,12 +25,19 @@ class Snakegame:
         self.blue = (0, 0, 255)
         self.red = (255, 0 , 0)
         self.white = (255, 255, 255)
+        self.black = (0, 0, 0)
 
         self.x1 = 300
         self.y1 = 300
 
         self.x1_change = 0
         self.y1_change = 0
+
+        self.snake_block = 10
+        self.snake_speed = 30
+
+        self.foodx = round(random.randrange(0, self.dis_width - self.snake_block) / 10.0) * 10.0
+        self.foody = round(random.randrange(0, self.dis_width - self.snake_block) / 10.0) * 10.0
 
         self.start_Img = pygame.image.load('start_button.png')
         self.exit_Img = pygame.image.load("exit_button.png")
@@ -40,6 +48,11 @@ class Snakegame:
         text_surface = font.render(text, True, self.green)
         return text_surface, text_surface.get_rect()
 
+    def draw_snake(self):
+        pygame.draw.rect(self.dis, self.blue, [self.x1, self.y1, 10, 10])
+
+    def draw_food(self):
+        pygame.draw.rect(self.dis, self.black, [self.foodx, self.foody, self.snake_block, self.snake_block])
 
     def game_intro(self):
         self.dis.blit(self.intro_bg, (0,0))
@@ -69,6 +82,8 @@ class Snakegame:
     def game_loop(self):
         Game_Exit = False
 
+
+
         while not Game_Exit:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -87,12 +102,19 @@ class Snakegame:
                         self.y1_change = 10
                         self.x1_change = 0
 
+            if self.x1 >= self.dis_width or self.x1 < 0 or self.y1 >= self.dis_height or self.y1 < 0:
+                Game_Exit = True
+
+
             self.x1 += self.x1_change
             self.y1 += self.y1_change
 
             self.dis.fill(self.white)
-            pygame.draw.rect(self.dis, self.blue, [self.x1, self.y1, 10, 10])
+            self.draw_snake()
+            self.draw_food()
             pygame.display.update()
+            if self.x1 == self.foodx and self.y1 == self.foody:
+                print("Yummy!!")
             self.clock.tick(30)
 
         pygame.quit()
