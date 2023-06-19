@@ -45,6 +45,24 @@ class Snakegame:
         self.intro = True
         self.clock = pygame.time.Clock()
 
+    def draw_highscore(self, count):
+        font = pygame.font.SysFont(None, 25)
+        text = font.render("Dodged: " + str(count), True, self.green)
+        self.dis.blit(text, (0, 0))
+
+    def display_highscore(self, eaten):
+        with open('highscore.txt', "r") as f:
+            highscore_lines = f.readlines()[0]
+
+        with open("highscore.txt", "w") as v:
+            if eaten >= int(highscore_lines):
+                v.write(str(eaten))
+            else:
+                v.write(highscore_lines)
+
+
+
+
     def reset(self):
         self.x1 = 300
         self.y1 = 300
@@ -86,6 +104,12 @@ class Snakegame:
         text_rect.center = ((self.dis_width / 2), (self.dis_height / 3.5))
         self.dis.blit(text_surf, text_rect)
 
+        with open("highscore.txt") as f:
+            lines = f.readlines()
+        text = small_text.render(f"Highscore: {lines[0]}", True, self.green)
+        self.dis.blit(text, [200, 100])
+        pygame.display.update()
+
         while self.intro:
             start_button = button.Button(400, 400, self.start_Img, 0.20, self.dis)
             exit_button = button.Button(200, 400, self.exit_Img, 0.04, self.dis)
@@ -104,6 +128,7 @@ class Snakegame:
 
     def game_loop(self):
         Game_Exit = False
+        eaten = 0
 
 
 
@@ -129,6 +154,7 @@ class Snakegame:
 
             if self.x1 >= self.dis_width or self.x1 < 0 or self.y1 >= self.dis_height or self.y1 < 0:
                 self.you_lost()
+                self.display_highscore(eaten)
                 self.game_intro()
 
 
@@ -140,7 +166,10 @@ class Snakegame:
             self.draw_food()
             pygame.display.update()
             if self.x1 == self.foodx and self.y1 == self.foody:
+                eaten += 1
                 print("Yummy!!")
+            self.draw_highscore(eaten)
+            pygame.display.update()
             self.clock.tick(30)
 
         pygame.quit()
