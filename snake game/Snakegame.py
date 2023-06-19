@@ -1,6 +1,7 @@
 import pygame
 import button
 import random
+import time
 pygame.init()
 
 
@@ -34,7 +35,7 @@ class Snakegame:
         self.y1_change = 0
 
         self.snake_block = 10
-        self.snake_speed = 30
+        self.snake_speed = 15
 
         self.foodx = round(random.randrange(0, self.dis_width - self.snake_block) / 10.0) * 10.0
         self.foody = round(random.randrange(0, self.dis_width - self.snake_block) / 10.0) * 10.0
@@ -44,17 +45,39 @@ class Snakegame:
         self.intro = True
         self.clock = pygame.time.Clock()
 
+    def reset(self):
+        self.x1 = 300
+        self.y1 = 300
+        self.x1_change = 0
+        self.y1_change = 0
+
+    def message_display(self, text):
+        large_text = pygame.font.Font('freesansbold.ttf', 85)
+        text_surf, text_rect = self.draw_text(text, large_text)
+        text_rect.center = ((self.dis_width / 2), (self.dis_height / 2))
+        self.dis.blit(text_surf, text_rect)
+
+        pygame.display.update()
+
+        time.sleep(2)
+
+    def you_lost(self):
+        self.message_display("you lost")
+
     def draw_text(self, text, font):
         text_surface = font.render(text, True, self.green)
         return text_surface, text_surface.get_rect()
 
-    def draw_snake(self):
-        pygame.draw.rect(self.dis, self.blue, [self.x1, self.y1, 10, 10])
+    def draw_snake(self,):
+
+            pygame.draw.rect(self.dis, self.blue, [self.x1, self.y1, self.snake_block, self.snake_block])
 
     def draw_food(self):
         pygame.draw.rect(self.dis, self.black, [self.foodx, self.foody, self.snake_block, self.snake_block])
 
     def game_intro(self):
+        self.reset()
+
         self.dis.blit(self.intro_bg, (0,0))
         self.intro = True
         small_text = pygame.font.Font('freesansbold.ttf', 50)
@@ -84,6 +107,8 @@ class Snakegame:
 
 
 
+
+
         while not Game_Exit:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -103,7 +128,8 @@ class Snakegame:
                         self.x1_change = 0
 
             if self.x1 >= self.dis_width or self.x1 < 0 or self.y1 >= self.dis_height or self.y1 < 0:
-                Game_Exit = True
+                self.you_lost()
+                self.game_intro()
 
 
             self.x1 += self.x1_change
