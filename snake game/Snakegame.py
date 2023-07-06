@@ -28,17 +28,17 @@ class Snakegame:
         self.white = (255, 255, 255)
         self.black = (0, 0, 0)
 
-        self.x1 = 300
-        self.y1 = 300
+        self.starting_x = 300
+        self.starting_y = 300
 
-        self.x1_change = 0
-        self.y1_change = 0
+        self.x_change = 0
+        self.y_change = 0
 
-        self.snake_block = 10
-        self.snake_speed = 15
+        self.block_size = 20
+        self.snake_speed = 1
 
-        self.foodx = round(random.randrange(0, self.dis_width - self.snake_block) / 10.0) * 10.0
-        self.foody = round(random.randrange(0, self.dis_width - self.snake_block) / 10.0) * 10.0
+        self.foodx = round(random.randrange(0, self.dis_width - self.block_size, self.block_size))
+        self.foody = round(random.randrange(0, self.dis_width - self.block_size, self.block_size))
 
         self.start_Img = pygame.image.load('start_button.png')
         self.exit_Img = pygame.image.load("exit_button.png")
@@ -60,14 +60,11 @@ class Snakegame:
             else:
                 v.write(highscore_lines)
 
-
-
-
     def reset(self):
-        self.x1 = 300
-        self.y1 = 300
-        self.x1_change = 0
-        self.y1_change = 0
+        self.starting_x = 300
+        self.starting_y = 300
+        self.x_change = 0
+        self.y_change = 0
 
     def message_display(self, text):
         large_text = pygame.font.Font('freesansbold.ttf', 85)
@@ -86,12 +83,13 @@ class Snakegame:
         text_surface = font.render(text, True, self.green)
         return text_surface, text_surface.get_rect()
 
-    def draw_snake(self,):
-
-            pygame.draw.rect(self.dis, self.blue, [self.x1, self.y1, self.snake_block, self.snake_block])
+    def draw_snake(self, snake_list):
+        for snake_block in snake_list:
+            x, y = snake_block
+            pygame.draw.rect(self.dis, self.blue, [x, y, self.block_size, self.block_size])
 
     def draw_food(self):
-        pygame.draw.rect(self.dis, self.black, [self.foodx, self.foody, self.snake_block, self.snake_block])
+        pygame.draw.rect(self.dis, self.black, [self.foodx, self.foody, self.block_size, self.block_size])
 
     def game_intro(self):
         self.reset()
@@ -130,9 +128,7 @@ class Snakegame:
         Game_Exit = False
         eaten = 0
 
-
-
-
+        snake_list = [(self.starting_x, self.starting_y)]
 
         while not Game_Exit:
             for event in pygame.event.get():
@@ -140,37 +136,54 @@ class Snakegame:
                     Game_Exit = True
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        self.x1_change = -10
-                        self.y1_change = 0
+                        self.x_change = -self.block_size
+                        self.y_change = 0
                     elif event.key == pygame.K_RIGHT:
-                        self.x1_change = 10
-                        self.y1_change = 0
+                        self.x_change = self.block_size
+                        self.y_change = 0
                     elif event.key == pygame.K_UP:
-                        self.y1_change = -10
-                        self.x1_change = 0
+                        self.y_change = -self.block_size
+                        self.x_change = 0
                     elif event.key == pygame.K_DOWN:
-                        self.y1_change = 10
-                        self.x1_change = 0
+                        self.y_change = self.block_size
+                        self.x_change = 0
 
-            if self.x1 >= self.dis_width or self.x1 < 0 or self.y1 >= self.dis_height or self.y1 < 0:
+            # Update snake position
+            for i in range(len(snake_list[:-1])):
+                snake_list[i] = snake_list[i + 1]
+            snake_list[-1] = (snake_list[-1][0] + self.x_change, snake_list[-1][1] + self.y_change)
+            #snake_list[300] = (snake_list[300][0] + 0, snake_list[300][1]) + 10)
+            #(snake_list[-1][0], snake_list[-1][1])
+            #snake_list[300] = (0, 10)
+
+            current_headx = snake_list[-1][0]
+            current_heady = snake_list[-1][1]
+
+            # Check for crash
+            if current_headx >= self.dis_width or current_headx < 0 or current_heady >= self.dis_height or current_heady < 0:
                 self.you_lost()
                 self.display_highscore(eaten)
                 self.game_intro()
 
-
-            self.x1 += self.x1_change
-            self.y1 += self.y1_change
-
+            # Rerender game
             self.dis.fill(self.white)
-            self.draw_snake()
             self.draw_food()
+            self.draw_snake(snake_list)
             pygame.display.update()
-            if self.x1 == self.foodx and self.y1 == self.foody:
+
+            # Eat food
+            if current_headx == self.foodx and current_heady == self.foody:
+
+                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
                 eaten += 1
                 print("Yummy!!")
+
+
+
+
             self.draw_highscore(eaten)
             pygame.display.update()
-            self.clock.tick(30)
+            pygame.time.wait(75)
 
         pygame.quit()
         quit()

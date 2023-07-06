@@ -1,0 +1,8 @@
+TODO:
+    - FIX FOOD SPAWN, Change every time u pick it up
+    - FIX new snake block coords, we did last location of head but it should be the last location of snake_list[0]
+    - FIX controls, you should not be able to change movement in the opposite direction.
+      so if u are moving down, u can't go up, etc.
+    - FIX Crash if you hit yourself
+    - FIX ART
+    - CONSIDER: Incremental speed
