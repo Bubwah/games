@@ -2,6 +2,7 @@ import pygame
 import button
 import random
 import time
+from random import sample
 pygame.init()
 
 
@@ -31,14 +32,36 @@ class Snakegame:
         self.starting_x = 300
         self.starting_y = 300
 
+
+
+
+
         self.x_change = 0
         self.y_change = 0
 
         self.block_size = 20
         self.snake_speed = 1
 
-        self.foodx = round(random.randrange(0, self.dis_width - self.block_size, self.block_size))
-        self.foody = round(random.randrange(0, self.dis_width - self.block_size, self.block_size))
+
+        self.juicy_foodx = round(random.randrange(0, self.dis_width - self.block_size, self.block_size))
+        self.juicy_foody = round(random.randrange(0, self.dis_width - self.block_size, self.block_size))
+
+        self.all_coords = []
+        for y in range(0, 701, self.block_size):
+            for x in range(0, 701, self.block_size):
+                self.all_coords.append((x, y))
+
+
+
+        # (20, 0)
+        self.sampled_coords = sample(self.all_coords, 2)
+        self.foodx = self.sampled_coords[0][0]
+        self.foody = self.sampled_coords[0][1]
+        self.juicy_foodx = self.sampled_coords[1][0]
+        self.juicy_foody = self.sampled_coords[1][1]
+
+
+
 
         self.start_Img = pygame.image.load('start_button.png')
         self.exit_Img = pygame.image.load("exit_button.png")
@@ -47,8 +70,9 @@ class Snakegame:
 
     def draw_highscore(self, count):
         font = pygame.font.SysFont(None, 25)
-        text = font.render("Dodged: " + str(count), True, self.green)
+        text = font.render("Eaten: " + str(count), True, self.green)
         self.dis.blit(text, (0, 0))
+
 
     def display_highscore(self, eaten):
         with open('highscore.txt', "r") as f:
@@ -79,6 +103,22 @@ class Snakegame:
     def you_lost(self):
         self.message_display("you lost")
 
+    def crash(self, eaten):
+        self.you_lost()
+        self.display_highscore(eaten)
+        self.game_intro()
+
+    def snake_crashed(self, current_headx, current_heady, snake_body):
+        #  If snake hit a wall
+        if not(0 <= current_headx <= self.dis_width) or not(0 <= current_heady <= self.dis_height):
+            return True
+
+        # If snake hit itself
+        if (current_headx, current_heady) in snake_body:
+            return True
+
+        return False
+
     def draw_text(self, text, font):
         text_surface = font.render(text, True, self.green)
         return text_surface, text_surface.get_rect()
@@ -88,8 +128,10 @@ class Snakegame:
             x, y = snake_block
             pygame.draw.rect(self.dis, self.blue, [x, y, self.block_size, self.block_size])
 
-    def draw_food(self):
-        pygame.draw.rect(self.dis, self.black, [self.foodx, self.foody, self.block_size, self.block_size])
+
+
+    def draw_food(self, color, food_typex, food_typey):
+        pygame.draw.rect(self.dis, color, [food_typex, food_typey, self.block_size, self.block_size])
 
     def game_intro(self):
         self.reset()
@@ -131,6 +173,7 @@ class Snakegame:
         snake_list = [(self.starting_x, self.starting_y)]
 
         while not Game_Exit:
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     Game_Exit = True
@@ -147,27 +190,25 @@ class Snakegame:
                     elif event.key == pygame.K_DOWN:
                         self.y_change = self.block_size
                         self.x_change = 0
-
+            self.sampled_coords = sample(self.all_coords, 2)
             # Update snake position
             for i in range(len(snake_list[:-1])):
                 snake_list[i] = snake_list[i + 1]
             snake_list[-1] = (snake_list[-1][0] + self.x_change, snake_list[-1][1] + self.y_change)
-            #snake_list[300] = (snake_list[300][0] + 0, snake_list[300][1]) + 10)
-            #(snake_list[-1][0], snake_list[-1][1])
-            #snake_list[300] = (0, 10)
+
 
             current_headx = snake_list[-1][0]
             current_heady = snake_list[-1][1]
 
             # Check for crash
-            if current_headx >= self.dis_width or current_headx < 0 or current_heady >= self.dis_height or current_heady < 0:
-                self.you_lost()
-                self.display_highscore(eaten)
-                self.game_intro()
+            if self.snake_crashed(current_headx, current_heady, snake_list[:-1]):
+                self.crash(eaten)
 
             # Rerender game
             self.dis.fill(self.white)
-            self.draw_food()
+
+            self.draw_food(self.black, self.foodx, self.foody)
+            self.draw_food(self.red, self.juicy_foodx, self.juicy_foody)
             self.draw_snake(snake_list)
             pygame.display.update()
 
@@ -178,9 +219,19 @@ class Snakegame:
                 eaten += 1
                 print("Yummy!!")
 
+                self.foodx = self.sampled_coords[0][0]
+                self.foody = self.sampled_coords[0][1]
+            # gives + 2 points, but + three length of snake.
+            if current_headx == self.juicy_foodx and current_heady == self.juicy_foody:
+                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
+                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
+                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
+                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
+                eaten += 2
+                print("Mega yummy")
 
-
-
+                self.juicy_foodx = self.sampled_coords[1][0]
+                self.juicy_foody = self.sampled_coords[1][1]
             self.draw_highscore(eaten)
             pygame.display.update()
             pygame.time.wait(75)
