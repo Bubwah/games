@@ -1,24 +1,27 @@
-import pygame
-import button
-import time
-from random import sample
-pygame.init()
+import os
 
+import pygame
+import time
+
+from random import sample
+import button
 
 class Snakegame:
     def __init__(self):
         pygame.init()
 
+
+        self.file_path = os.path.dirname(os.path.abspath(__file__))
+        self.highscore_filepath = os.path.join(self.file_path, "highscore.txt")
+        self.images_filepath = os.path.join(self.file_path, "Images")
+
         self.dis_width = 700
         self.dis_height = 700
 
-        self.dis = pygame.display.set_mode((self.dis_width,self.dis_height))
-
-        pygame.display.update()
-
+        self.dis = pygame.display.set_mode((self.dis_width, self.dis_height))
         pygame.display.set_caption("Snake")
 
-        self.intro_bg = pygame.image.load('intro_bg.png')
+        self.intro_bg = pygame.image.load(os.path.join(self.images_filepath, 'intro_bg.png'))
         self.intro_bg = pygame.transform.scale(self.intro_bg, (self.dis_width,self.dis_height))
 
         self.green = (0, 200, 0)
@@ -50,8 +53,8 @@ class Snakegame:
         self.twirly_foodx = self.sampled_coords[2][0]
         self.twirly_foody = self.sampled_coords[2][1]
 
-        self.start_Img = pygame.image.load('start_button.png')
-        self.exit_Img = pygame.image.load("exit_button.png")
+        self.start_Img = pygame.image.load(os.path.join(self.images_filepath, 'start_button.png'))
+        self.exit_Img = pygame.image.load(os.path.join(self.images_filepath, "exit_button.png"))
         self.intro = True
         self.clock = pygame.time.Clock()
 
@@ -61,10 +64,10 @@ class Snakegame:
         self.dis.blit(text, (0, 0))
 
     def display_highscore(self, eaten: int) -> None:
-        with open('highscore.txt', "r") as f:
+        with open(self.highscore_filepath, "r") as f:
             highscore_lines = f.readlines()[0]
 
-        with open("highscore.txt", "w") as v:
+        with open(self.highscore_filepath, "w") as v:
             if eaten >= int(highscore_lines):
                 v.write(str(eaten))
             else:
@@ -75,6 +78,7 @@ class Snakegame:
         self.starting_y = 300
         self.x_change = 0
         self.y_change = 0
+
 
     def message_display(self, text) -> None:
         large_text = pygame.font.Font('freesansbold.ttf', 85)
@@ -118,6 +122,7 @@ class Snakegame:
         pygame.draw.rect(self.dis, color, [food_typex, food_typey, self.block_size, self.block_size])
 
     def game_intro(self):
+        pygame.event.clear()
         self.reset()
 
         self.dis.blit(self.intro_bg, (0,0))
@@ -128,7 +133,7 @@ class Snakegame:
         text_rect.center = ((self.dis_width / 2), (self.dis_height / 3.5))
         self.dis.blit(text_surf, text_rect)
 
-        with open("highscore.txt") as f:
+        with open(self.highscore_filepath) as f:
             lines = f.readlines()
         text = small_text.render(f"Highscore: {lines[0]}", True, self.green)
         self.dis.blit(text, [200, 100])

@@ -1,16 +1,19 @@
-import button
 import pygame
 import random
 import time
+import os
+import button
 
 from pathlib import Path
-
-pygame.init()
 
 
 class Racegame:
     def __init__(self):
         pygame.init()
+
+        self.file_path = os.path.dirname(os.path.abspath(__file__))
+        self.highscore_filepath = os.path.join(self.file_path, "highscore.txt")
+        self.images_filepath = os.path.join(self.file_path, "Images")
 
         self.display_width = 700
         self.display_height = 700
@@ -23,41 +26,41 @@ class Racegame:
         pygame.display.set_caption('Traffic Dodge')
         self.clock = pygame.time.Clock()
 
-        self.bg = pygame.image.load("road2.png").convert()
+        self.bg = pygame.image.load(os.path.join(self.images_filepath, "road2.png")).convert()
         self.bg = pygame.transform.scale(self.bg, (700, 350))
         self.bg_height = self.bg.get_height()
 
-        self.obstacleImg = pygame.image.load("racecar.png")
+        self.obstacleImg = pygame.image.load(os.path.join(self.images_filepath, "racecar.png"))
         self.obstacleImg = pygame.transform.rotate(pygame.transform.scale(self.obstacleImg, (100, 140)), 180)
 
-        self.carImg = pygame.image.load('racecar.png')
+        self.carImg = pygame.image.load(os.path.join(self.images_filepath, 'racecar.png'))
         self.carImg = pygame.transform.scale(self.carImg, (100, 140))
 
-        self.truckImg = pygame.image.load('truck.png')
+        self.truckImg = pygame.image.load(os.path.join(self.images_filepath, 'truck.png'))
         self.truckImg = pygame.transform.scale(self.truckImg, (100, 200))
 
-        self.racecarBlueImg = pygame.image.load('racecar_blue.png')
+        self.racecarBlueImg = pygame.image.load(os.path.join(self.images_filepath, 'racecar_blue.png'))
         self.racecarBlueImg = pygame.transform.rotate(pygame.transform.scale(self.racecarBlueImg, (100, 140)), 180)
 
-        self.racecarGreenImg = pygame.image.load('racecar_green.png')
+        self.racecarGreenImg = pygame.image.load(os.path.join(self.images_filepath, 'racecar_green.png'))
         self.racecarGreenImg = pygame.transform.rotate(pygame.transform.scale(self.racecarGreenImg, (100, 140)), 180)
 
-        self.racecarPinkImg = pygame.image.load('racecar_pink.png')
+        self.racecarPinkImg = pygame.image.load(os.path.join(self.images_filepath, 'racecar_pink.png'))
         self.racecarPinkImg = pygame.transform.rotate(pygame.transform.scale(self.racecarPinkImg, (100, 140)), 180)
 
-        self.racecarYellowImg = pygame.image.load('racecar_yellow.png')
+        self.racecarYellowImg = pygame.image.load(os.path.join(self.images_filepath, 'racecar_yellow.png'))
         self.racecarYellowImg = pygame.transform.rotate(pygame.transform.scale(self.racecarYellowImg, (100, 140)), 180)
 
-        self.motorcycleImg = pygame.image.load('motorcycle.png')
+        self.motorcycleImg = pygame.image.load(os.path.join(self.images_filepath, 'motorcycle.png'))
         self.motorcycleImg = pygame.transform.rotate(pygame.transform.scale(self.motorcycleImg, (90, 130)), 180)
 
-        self.start_Img = pygame.image.load("start_button.png")
-        self.exit_Img = pygame.image.load("exit_button.png")
+        self.start_Img = pygame.image.load(os.path.join(self.images_filepath, "start_button.png"))
+        self.exit_Img = pygame.image.load(os.path.join(self.images_filepath, "exit_button.png"))
 
         self.tiles = self.display_height / self.bg_height
         self.tiles = int(self.tiles) + 1
 
-        self.introImg = pygame.image.load("introbg.png")
+        self.introImg = pygame.image.load(os.path.join(self.images_filepath, "introbg.png"))
         self.introImg = pygame.transform.scale(self.introImg, (700, 700))
 
         self.delete_obstacles = []
@@ -97,8 +100,10 @@ class Racegame:
 
         time.sleep(2)
 
-    def crash(self):
+    def crash(self, dodged: int):
         self.message_display('You Crashed')
+        self.display_highscore(dodged)
+        self.game_intro()
 
     def draw_highscore(self, count):
         font = pygame.font.SysFont(None, 25)
@@ -106,28 +111,30 @@ class Racegame:
         self.gameDisplay.blit(text, (0, 0))
 
     def display_highscore(self, dodged):
-        with open('highscore.txt', "r") as f:
+        with open(self.highscore_filepath, "r") as f:
             highscore_lines = f.readlines()[0]
 
-        with open("highscore.txt", "w") as v:
+        with open(self.highscore_filepath, "w") as v:
             if dodged >= int(highscore_lines):
                 v.write(str(dodged))
             else:
                 v.write(highscore_lines)
 
     def game_intro(self):
+        pygame.event.clear()
         intro = True
 
         while intro:
+
             self.gameDisplay.blit(self.introImg, (0, 0))
             start_button = button.Button(400, 400, self.start_Img, 0.20, self.gameDisplay)
             exit_button = button.Button(200, 400, self.exit_Img, 0.04, self.gameDisplay)
 
             for event in pygame.event.get():
-                print(event)
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
+
             small_text = pygame.font.Font('freesansbold.ttf', 50)
             large_text = pygame.font.Font('freesansbold.ttf', 85)
             text_surf, text_rect = self.draw_text("Traffic Dodge", large_text)
@@ -138,7 +145,7 @@ class Racegame:
                 print("is file")
 
             else:
-                with open("highscore.txt") as f:
+                with open(self.highscore_filepath) as f:
                     lines = f.readlines()
                 text = small_text.render(f"Highscore: {lines[0]}", True, self.green)
                 self.gameDisplay.blit(text, [200, 100])
@@ -149,11 +156,12 @@ class Racegame:
 
             if exit_button.clicked:
                 pygame.quit()
-
+                quit()
             pygame.display.update()
             self.clock.tick(15)
 
     def game_loop(self):
+        self.game_exit = False
         scroll = 0
         x = (self.display_width * 0.45)
         y = (self.display_height * 0.75)
@@ -162,18 +170,16 @@ class Racegame:
         x_change = 0
         dodged = 0
 
-        self.game_exit = False
-
         obstacles = []
 
         while not self.game_exit:
             obstacle_speed = min(6 + 0.4 * dodged, 16)
             spawnrate = min(0.02 + 0.008 * dodged, 0.33)
             max_cars = min(dodged // 10 + 1, 3)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    quit()
+                    self.game_exit = True
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
@@ -224,9 +230,7 @@ class Racegame:
                             or obstacle[0] < x + self.car_width < obstacle[0] + obstacle_width:
                         print('x crossover')
 
-                        self.crash()
-                        self.display_highscore(dodged)
-                        self.game_exit = True
+                        self.crash(dodged)
 
                 if obstacle[1] > self.display_height:
                     self.delete_obstacles.append(obstacle_index)
@@ -242,9 +246,10 @@ class Racegame:
             self.delete_obstacles = []
 
             if x > self.display_width - self.car_width or x < 0:
-                self.crash()
-                self.display_highscore(dodged)
-                self.game_exit = True
+                self.crash(dodged)
 
             pygame.display.update()
             self.clock.tick(60)
+
+        pygame.quit()
+        quit()

@@ -3,9 +3,8 @@ from Snakegame import Snakegame
 import pygame
 
 
-def main():
+def launch_snakegame():
     snakegame = Snakegame()
-
     snakegame.game_intro()
 
     pygame.quit()
@@ -13,4 +12,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    launch_snakegame()

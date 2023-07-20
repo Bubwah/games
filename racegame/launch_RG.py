@@ -1,11 +1,9 @@
-from racegame import Racegame
-
+import Racegame
 import pygame
 
 
-def main():
-    racegame = Racegame()
-
+def launch_racegame():
+    racegame = Racegame.Racegame()
     racegame.game_intro()
 
     pygame.quit()
@@ -13,4 +11,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    launch_racegame()
