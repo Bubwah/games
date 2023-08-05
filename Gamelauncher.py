@@ -19,7 +19,7 @@ class Gamelauncher:
 
         pygame.display.set_caption("Launcher")
 
-        self.launcher_bg = pygame.image.load(os.path.join(self.images_filepath, 'launcher_bg.png'))
+        self.launcher_bg = pygame.image.load(os.path.join(self.images_filepath, 'green_backdrop.png'))
         self.launcher_bg = pygame.transform.scale(self.launcher_bg, (self.dis_width, self.dis_height))
         self.snake_img = pygame.image.load(os.path.join(self.images_filepath, 'snake_icon.png'))
         self.racecar_img = pygame.image.load(os.path.join(self.images_filepath, 'racecar_icon.png'))
@@ -34,6 +34,7 @@ class Gamelauncher:
 
         while self.launcher:
             self.gameDisplay.blit(self.launcher_bg, (0, 0))
+            self.message_display("Bubwah's Games")
             snake_button = button.Button(400, 400, self.snake_img, 0.20, self.gameDisplay)
             race_button = button.Button(200, 400, self.racecar_img, 0.20, self.gameDisplay)
 
@@ -49,6 +50,17 @@ class Gamelauncher:
                 self.launch_racegame()
 
             pygame.display.update()
+
+    def message_display(self, text) -> None:
+        large_text = pygame.font.Font('freesansbold.ttf', 55)
+        text_surf, text_rect = self.draw_text(text, large_text)
+        text_rect.center = ((self.dis_width / 2), (self.dis_height / 3))
+        self.gameDisplay.blit(text_surf, text_rect)
+
+
+    def draw_text(self, text, font):
+        text_surface = font.render(text, True, self.green)
+        return text_surface, text_surface.get_rect()
 
     @staticmethod
     def launch_snakegame():

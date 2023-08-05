@@ -26,6 +26,7 @@ class Snakegame:
 
         self.green = (0, 200, 0)
         self.blue = (0, 0, 255)
+        self.orange = (255, 165, 0)
         self.red = (255, 0 , 0)
         self.white = (255, 255, 255)
         self.black = (0, 0, 0)
@@ -155,12 +156,15 @@ class Snakegame:
                 self.game_loop()
             pygame.display.update()
 
+
+
     def game_loop(self):
         game_exit = False
         eaten = 0
         switch_food = 1
         snake_list = [(self.starting_x, self.starting_y)]
 
+        latest_key_pressed = ""
         while not game_exit:
 
             for event in pygame.event.get():
@@ -169,18 +173,40 @@ class Snakegame:
                     game_exit = True
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        self.x_change = -self.block_size * switch_food
-                        self.y_change = 0
-                    elif event.key == pygame.K_RIGHT:
-                        self.x_change = self.block_size * switch_food
-                        self.y_change = 0
-                    elif event.key == pygame.K_UP:
-                        self.y_change = -self.block_size * switch_food
-                        self.x_change = 0
-                    elif event.key == pygame.K_DOWN:
-                        self.y_change = self.block_size * switch_food
-                        self.x_change = 0
+
+                    if latest_key_pressed != pygame.K_RIGHT:
+                        if event.key == pygame.K_LEFT:
+                            self.x_change = -self.block_size * switch_food
+                            self.y_change = 0
+                            latest_key_pressed = pygame.K_LEFT
+                            print(latest_key_pressed)
+
+                    if latest_key_pressed != pygame.K_LEFT:
+                        if event.key == pygame.K_RIGHT:
+                            self.x_change = self.block_size * switch_food
+                            self.y_change = 0
+                            latest_key_pressed = pygame.K_RIGHT
+                            print(latest_key_pressed)
+
+                    if latest_key_pressed != pygame.K_DOWN:
+                        if event.key == pygame.K_UP:
+                            self.y_change = -self.block_size * switch_food
+                            self.x_change = 0
+                            latest_key_pressed = pygame.K_UP
+                            print(latest_key_pressed)
+
+                    if latest_key_pressed != pygame.K_UP:
+                        if event.key == pygame.K_DOWN:
+                            self.y_change = self.block_size * switch_food
+                            self.x_change = 0
+                            latest_key_pressed = pygame.K_DOWN
+                            print(latest_key_pressed)
+
+
+
+
+
+
 
             self.sampled_coords = sample(self.all_coords, 3)
             # Update snake position
@@ -200,7 +226,7 @@ class Snakegame:
 
             self.draw_food(self.black, self.foodx, self.foody)
             self.draw_food(self.red, self.juicy_foodx, self.juicy_foody)
-            self.draw_food(self.blue, self.twirly_foodx, self.twirly_foody)
+            self.draw_food(self.orange, self.twirly_foodx, self.twirly_foody)
             self.draw_snake(snake_list)
             pygame.display.update()
 
