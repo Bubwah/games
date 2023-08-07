@@ -30,19 +30,28 @@ class Snakegame:
         self.red = (255, 0 , 0)
         self.white = (255, 255, 255)
         self.black = (0, 0, 0)
-
+        self.block_size = 20
+        self.snake_head_img = pygame.image.load(os.path.join(self.images_filepath, 'snake_head.png'))
+        self.snake_body_img = pygame.image.load(os.path.join(self.images_filepath, 'snake_body.png'))
+        self.snake_body_img = pygame.transform.scale(self.snake_body_img, (self.block_size, self.block_size))
+        self.snake_head_img_left = pygame.transform.scale(self.snake_head_img, (self.block_size, self.block_size))
+        self.snake_head_img_right = pygame.transform.rotate(self.snake_head_img_left, (180))
+        self.snake_head_img_down = pygame.transform.rotate(self.snake_head_img_right, (270))
+        self.snake_head_img_up = pygame.transform.rotate(self.snake_head_img_left, (270))
         self.starting_x = 300
         self.starting_y = 300
 
         self.x_change = 0
         self.y_change = 0
 
-        self.block_size = 20
+
         self.snake_speed = 1
 
+
+
         self.all_coords = []
-        for y in range(0, 701, self.block_size):
-            for x in range(0, 701, self.block_size):
+        for y in range(0, 700, self.block_size):
+            for x in range(0, 700, self.block_size):
                 self.all_coords.append((x, y))
 
         # (20, 0)
@@ -114,10 +123,26 @@ class Snakegame:
         text_surface = font.render(text, True, self.green)
         return text_surface, text_surface.get_rect()
 
-    def draw_snake(self, snake_list: list[tuple]) -> None:
-        for snake_block in snake_list:
+    def draw_snake_body(self, snake_list: list[tuple]) -> None:
+        for snake_block in snake_list[0:-1]:
             x, y = snake_block
-            pygame.draw.rect(self.dis, self.blue, [x, y, self.block_size, self.block_size])
+            #pygame.draw.rect(self.dis, self.blue, [x, y, self.block_size, self.block_size])
+            self.dis.blit(self.snake_body_img,[x, y, self.block_size, self.block_size ,])
+
+    def draw_snake_head(self, snake_list: list[tuple], latest_key_pressed):
+        for snake_block in snake_list:
+            if latest_key_pressed == pygame.K_UP:
+                x, y = snake_block
+                self.dis.blit(self.snake_head_img_up, [x, y, self.block_size, self.block_size])
+            if latest_key_pressed == pygame.K_DOWN:
+                x, y = snake_block
+                self.dis.blit(self.snake_head_img_down, [x, y, self.block_size, self.block_size])
+            if latest_key_pressed == pygame.K_LEFT:
+                x, y = snake_block
+                self.dis.blit(self.snake_head_img_left, [x, y, self.block_size, self.block_size])
+            if latest_key_pressed == pygame.K_RIGHT:
+                x, y = snake_block
+                self.dis.blit(self.snake_head_img_right, [x, y, self.block_size, self.block_size])
 
     def draw_food(self, color: tuple, food_typex: int, food_typey: int) -> None:
         pygame.draw.rect(self.dis, color, [food_typex, food_typey, self.block_size, self.block_size])
@@ -227,7 +252,12 @@ class Snakegame:
             self.draw_food(self.black, self.foodx, self.foody)
             self.draw_food(self.red, self.juicy_foodx, self.juicy_foody)
             self.draw_food(self.orange, self.twirly_foodx, self.twirly_foody)
-            self.draw_snake(snake_list)
+
+
+            if snake_list[-1]:
+                self.draw_snake_head(snake_list, latest_key_pressed)
+            if snake_list[0:-1]:
+                self.draw_snake_body(snake_list)
             pygame.display.update()
 
             # Eat food
