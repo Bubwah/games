@@ -31,6 +31,10 @@ class Snakegame:
         self.white = (255, 255, 255)
         self.black = (0, 0, 0)
         self.block_size = 20
+
+        self.background_img = pygame.image.load(os.path.join(self.images_filepath, "grass.png"))
+        self.background_img = pygame.transform.scale(self.background_img,(700, 700))
+
         self.snake_head_img = pygame.image.load(os.path.join(self.images_filepath, 'snake_head.png'))
         self.snake_body_img = pygame.image.load(os.path.join(self.images_filepath, 'snake_body.png'))
         self.snake_body_img = pygame.transform.scale(self.snake_body_img, (self.block_size, self.block_size))
@@ -38,6 +42,14 @@ class Snakegame:
         self.snake_head_img_right = pygame.transform.rotate(self.snake_head_img_left, (180))
         self.snake_head_img_down = pygame.transform.rotate(self.snake_head_img_right, (270))
         self.snake_head_img_up = pygame.transform.rotate(self.snake_head_img_left, (270))
+
+        self.apple_img = pygame.image.load(os.path.join(self.images_filepath, 'apple.png'))
+        self.apple_img = pygame.transform.scale(self.apple_img, (self.block_size, self.block_size))
+        self.banana_img = pygame.image.load(os.path.join(self.images_filepath, 'banana.png'))
+        self.banana_img = pygame.transform.scale(self.banana_img, (self.block_size, self.block_size))
+        self.watermelon_img = pygame.image.load(os.path.join(self.images_filepath, 'watermelon.png'))
+        self.watermelon_img = pygame.transform.scale(self.watermelon_img, (self.block_size, self.block_size))
+
         self.starting_x = 300
         self.starting_y = 300
 
@@ -70,7 +82,7 @@ class Snakegame:
 
     def draw_highscore(self, count: int) -> None:
         font = pygame.font.SysFont(None, 25)
-        text = font.render("Eaten: " + str(count), True, self.green)
+        text = font.render("Eaten: " + str(count), True, self.red)
         self.dis.blit(text, (0, 0))
 
     def display_highscore(self, eaten: int) -> None:
@@ -144,9 +156,14 @@ class Snakegame:
                 x, y = snake_block
                 self.dis.blit(self.snake_head_img_right, [x, y, self.block_size, self.block_size])
 
-    def draw_food(self, color: tuple, food_typex: int, food_typey: int) -> None:
-        pygame.draw.rect(self.dis, color, [food_typex, food_typey, self.block_size, self.block_size])
-
+    def draw_food(self, image, food_typex: int, food_typey: int) -> None:
+        #pygame.draw.rect(self.dis, color, [food_typex, food_typey, self.block_size, self.block_size])
+        if image == self.apple_img:
+            self.dis.blit(self.apple_img, [food_typex, food_typey])
+        if image == self.banana_img:
+            self.dis.blit(self.banana_img, [food_typex, food_typey])
+        if image == self.watermelon_img:
+            self.dis.blit(self.watermelon_img, [food_typex, food_typey])
     def game_intro(self):
         pygame.event.clear()
         self.reset()
@@ -192,7 +209,10 @@ class Snakegame:
         latest_key_pressed = ""
         while not game_exit:
 
+
+
             for event in pygame.event.get():
+
 
                 if event.type == pygame.QUIT:
                     game_exit = True
@@ -247,11 +267,12 @@ class Snakegame:
                 self.crash(eaten)
 
             # Rerender game
-            self.dis.fill(self.white)
+            self.dis.blit(self.background_img, (0, 0))
 
-            self.draw_food(self.black, self.foodx, self.foody)
-            self.draw_food(self.red, self.juicy_foodx, self.juicy_foody)
-            self.draw_food(self.orange, self.twirly_foodx, self.twirly_foody)
+
+            self.draw_food(self.apple_img, self.foodx, self.foody)
+            self.draw_food(self.banana_img, self.juicy_foodx, self.juicy_foody)
+            self.draw_food(self.watermelon_img, self.twirly_foodx, self.twirly_foody)
 
 
             if snake_list[-1]:
@@ -284,7 +305,7 @@ class Snakegame:
                 snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
                 snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
                 switch_food *= -1
-                eaten += 2
+                eaten += 3
                 self.twirly_foodx = self.sampled_coords[2][0]
                 self.twirly_foody = self.sampled_coords[2][1]
             self.draw_highscore(eaten)
