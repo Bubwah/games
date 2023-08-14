@@ -6,10 +6,10 @@ import time
 from random import sample
 import button
 
+
 class Snakegame:
     def __init__(self):
         pygame.init()
-
 
         self.file_path = os.path.dirname(os.path.abspath(__file__))
         self.highscore_filepath = os.path.join(self.file_path, "highscore.txt")
@@ -50,6 +50,10 @@ class Snakegame:
         self.watermelon_img = pygame.image.load(os.path.join(self.images_filepath, 'watermelon.png'))
         self.watermelon_img = pygame.transform.scale(self.watermelon_img, (self.block_size, self.block_size))
 
+        self.on_img = pygame.image.load(os.path.join(self.images_filepath, "on.png"))
+        self.on_img = pygame.transform.scale(self.on_img, (self.block_size*1.5, self.block_size))
+        self.off_img = pygame.image.load(os.path.join(self.images_filepath, "off.png"))
+        self.off_img = pygame.transform.scale(self.off_img, (self.block_size*1.5, self.block_size))
         self.starting_x = 300
         self.starting_y = 300
 
@@ -58,9 +62,6 @@ class Snakegame:
 
 
         self.snake_speed = 1
-
-
-
         self.all_coords = []
         for y in range(0, 700, self.block_size):
             for x in range(0, 700, self.block_size):
@@ -74,11 +75,12 @@ class Snakegame:
         self.juicy_foody = self.sampled_coords[1][1]
         self.twirly_foodx = self.sampled_coords[2][0]
         self.twirly_foody = self.sampled_coords[2][1]
-
+        self.twirly_toggle = False
         self.start_Img = pygame.image.load(os.path.join(self.images_filepath, 'start_button.png'))
         self.exit_Img = pygame.image.load(os.path.join(self.images_filepath, "exit_button.png"))
         self.intro = True
         self.clock = pygame.time.Clock()
+        self.toggle_twirly_fruit_button = button.Button(350, 320, self.on_img, 1, self.dis)
 
     def draw_highscore(self, count: int) -> None:
         font = pygame.font.SysFont(None, 25)
@@ -156,24 +158,32 @@ class Snakegame:
                 x, y = snake_block
                 self.dis.blit(self.snake_head_img_right, [x, y, self.block_size, self.block_size])
 
-    def draw_food(self, image, food_typex: int, food_typey: int) -> None:
+    def draw_food(self, image, food_typex: int, food_typey: int, twirly_toggle) -> None:
         #pygame.draw.rect(self.dis, color, [food_typex, food_typey, self.block_size, self.block_size])
         if image == self.apple_img:
             self.dis.blit(self.apple_img, [food_typex, food_typey])
         if image == self.banana_img:
             self.dis.blit(self.banana_img, [food_typex, food_typey])
-        if image == self.watermelon_img:
-            self.dis.blit(self.watermelon_img, [food_typex, food_typey])
+        if twirly_toggle == True:
+            if image == self.watermelon_img:
+                self.dis.blit(self.watermelon_img, [food_typex, food_typey])
+
     def game_intro(self):
         pygame.event.clear()
+        pygame.mouse.set_pos(200, self.dis_height // 2)
         self.reset()
 
         self.dis.blit(self.intro_bg, (0,0))
         self.intro = True
+        smaller_text = pygame.font.Font('freesansbold.ttf', 20)
         small_text = pygame.font.Font('freesansbold.ttf', 50)
         large_text = pygame.font.Font('freesansbold.ttf', 85)
         text_surf, text_rect = self.draw_text("Snake", large_text)
         text_rect.center = ((self.dis_width / 2), (self.dis_height / 3.5))
+
+        self.dis.blit(text_surf, text_rect)
+        text_surf, text_rect = self.draw_text("twirly fruit on/off", smaller_text)
+        text_rect.center = (370, 300)
         self.dis.blit(text_surf, text_rect)
 
         with open(self.highscore_filepath) as f:
@@ -183,19 +193,32 @@ class Snakegame:
         pygame.display.update()
 
         while self.intro:
+
             start_button = button.Button(400, 400, self.start_Img, 0.20, self.dis)
             exit_button = button.Button(200, 400, self.exit_Img, 0.04, self.dis)
-            for self.event in pygame.event.get():
-                if self.event.type == pygame.QUIT:
+
+
+            for event in pygame.event.get():
+
+                if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
 
             if exit_button.clicked:
                 pygame.quit()
                 quit()
-
             if start_button.clicked:
                 self.game_loop()
+            if self.toggle_twirly_fruit_button.clicked:
+                if self.twirly_toggle:
+                    self.toggle_twirly_fruit_button.image = self.on_img
+
+                if not self.twirly_toggle:
+                    self.toggle_twirly_fruit_button.image = self.off_img
+
+                self.twirly_toggle = not self.twirly_toggle
+
+            self.toggle_twirly_fruit_button.draw(self.dis)
             pygame.display.update()
 
 
@@ -270,9 +293,9 @@ class Snakegame:
             self.dis.blit(self.background_img, (0, 0))
 
 
-            self.draw_food(self.apple_img, self.foodx, self.foody)
-            self.draw_food(self.banana_img, self.juicy_foodx, self.juicy_foody)
-            self.draw_food(self.watermelon_img, self.twirly_foodx, self.twirly_foody)
+            self.draw_food(self.apple_img, self.foodx, self.foody, self.twirly_toggle)
+            self.draw_food(self.banana_img, self.juicy_foodx, self.juicy_foody, self.twirly_toggle)
+            self.draw_food(self.watermelon_img, self.twirly_foodx, self.twirly_foody, self.twirly_toggle)
 
 
             if snake_list[-1]:

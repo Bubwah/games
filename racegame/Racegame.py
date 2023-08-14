@@ -122,6 +122,7 @@ class Racegame:
 
     def game_intro(self):
         pygame.event.clear()
+        pygame.mouse.set_pos(self.display_width//2, self.display_height//2)
         intro = True
 
         while intro:
