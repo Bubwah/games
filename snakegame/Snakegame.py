@@ -76,12 +76,15 @@ class Snakegame:
         self.twirly_foodx = self.sampled_coords[2][0]
         self.twirly_foody = self.sampled_coords[2][1]
         self.twirly_toggle = False
+        self.juicy_toggle = False
+        self.basic_toggle = True
         self.start_Img = pygame.image.load(os.path.join(self.images_filepath, 'start_button.png'))
         self.exit_Img = pygame.image.load(os.path.join(self.images_filepath, "exit_button.png"))
         self.intro = True
         self.clock = pygame.time.Clock()
         self.toggle_twirly_fruit_button = button.Button(350, 320, self.on_img, 1, self.dis)
-
+        self.toggle_juicy_fruit_button = button.Button(450, 320, self.on_img, 1, self.dis)
+        self.toggle_basic_fruit_button = button.Button(250, 320, self.on_img, 1, self.dis)
     def draw_highscore(self, count: int) -> None:
         font = pygame.font.SysFont(None, 25)
         text = font.render("Eaten: " + str(count), True, self.red)
@@ -158,13 +161,15 @@ class Snakegame:
                 x, y = snake_block
                 self.dis.blit(self.snake_head_img_right, [x, y, self.block_size, self.block_size])
 
-    def draw_food(self, image, food_typex: int, food_typey: int, twirly_toggle) -> None:
+    def draw_food(self, image, food_typex: int, food_typey: int, twirly_toggle, juicy_toggle, basic_toggle) -> None:
         #pygame.draw.rect(self.dis, color, [food_typex, food_typey, self.block_size, self.block_size])
-        if image == self.apple_img:
-            self.dis.blit(self.apple_img, [food_typex, food_typey])
-        if image == self.banana_img:
-            self.dis.blit(self.banana_img, [food_typex, food_typey])
-        if twirly_toggle == True:
+        if basic_toggle:
+            if image == self.apple_img:
+                self.dis.blit(self.apple_img, [food_typex, food_typey])
+        if juicy_toggle:
+            if image == self.banana_img:
+                self.dis.blit(self.banana_img, [food_typex, food_typey])
+        if twirly_toggle:
             if image == self.watermelon_img:
                 self.dis.blit(self.watermelon_img, [food_typex, food_typey])
 
@@ -175,6 +180,7 @@ class Snakegame:
 
         self.dis.blit(self.intro_bg, (0,0))
         self.intro = True
+        smallest_text = pygame.font.Font('freesansbold.ttf', 15)
         smaller_text = pygame.font.Font('freesansbold.ttf', 20)
         small_text = pygame.font.Font('freesansbold.ttf', 50)
         large_text = pygame.font.Font('freesansbold.ttf', 85)
@@ -182,8 +188,17 @@ class Snakegame:
         text_rect.center = ((self.dis_width / 2), (self.dis_height / 3.5))
 
         self.dis.blit(text_surf, text_rect)
-        text_surf, text_rect = self.draw_text("twirly fruit on/off", smaller_text)
-        text_rect.center = (370, 300)
+        text_surf, text_rect = self.draw_text("toggle on/off", smaller_text)
+        text_rect.center = (370, 260)
+        self.dis.blit(text_surf, text_rect)
+        text_surf, text_rect = self.draw_text("twirly food", smallest_text)
+        text_rect.center = (365, 300)
+        self.dis.blit(text_surf, text_rect)
+        text_surf, text_rect = self.draw_text("juicy food", smallest_text)
+        text_rect.center = (465, 300)
+        self.dis.blit(text_surf, text_rect)
+        text_surf, text_rect = self.draw_text("basic food", smallest_text)
+        text_rect.center = (265, 300)
         self.dis.blit(text_surf, text_rect)
 
         with open(self.highscore_filepath) as f:
@@ -217,20 +232,42 @@ class Snakegame:
                     self.toggle_twirly_fruit_button.image = self.off_img
 
                 self.twirly_toggle = not self.twirly_toggle
+            if self.toggle_juicy_fruit_button.clicked:
+                if self.juicy_toggle:
+                    self.toggle_juicy_fruit_button.image = self.on_img
+                if not self.juicy_toggle:
+                    self.toggle_juicy_fruit_button.image = self.off_img
 
+                self.juicy_toggle = not self.juicy_toggle
+
+            if self.toggle_basic_fruit_button.clicked:
+                if self.basic_toggle:
+                    self.toggle_basic_fruit_button.image = self.on_img
+                if not self.basic_toggle:
+                    self.toggle_basic_fruit_button.image = self.off_img
+
+                self.basic_toggle = not self.basic_toggle
+
+            self.toggle_juicy_fruit_button.draw(self.dis)
             self.toggle_twirly_fruit_button.draw(self.dis)
+            self.toggle_basic_fruit_button.draw(self.dis)
             pygame.display.update()
 
 
 
     def game_loop(self):
         game_exit = False
+        speed = 0
         eaten = 0
         switch_food = 1
-        snake_list = [(self.starting_x, self.starting_y)]
+        snake_list = [(self.starting_x-2*self.block_size, self.starting_y), (self.starting_x-self.block_size, self.starting_y), (self.starting_x, self.starting_y)]
 
         latest_key_pressed = ""
+
+        self.x_change = self.block_size * switch_food
+
         while not game_exit:
+
 
 
 
@@ -247,29 +284,29 @@ class Snakegame:
                             self.x_change = -self.block_size * switch_food
                             self.y_change = 0
                             latest_key_pressed = pygame.K_LEFT
-                            print(latest_key_pressed)
+
+
 
                     if latest_key_pressed != pygame.K_LEFT:
                         if event.key == pygame.K_RIGHT:
                             self.x_change = self.block_size * switch_food
                             self.y_change = 0
                             latest_key_pressed = pygame.K_RIGHT
-                            print(latest_key_pressed)
+
+
 
                     if latest_key_pressed != pygame.K_DOWN:
                         if event.key == pygame.K_UP:
                             self.y_change = -self.block_size * switch_food
                             self.x_change = 0
                             latest_key_pressed = pygame.K_UP
-                            print(latest_key_pressed)
+
 
                     if latest_key_pressed != pygame.K_UP:
                         if event.key == pygame.K_DOWN:
                             self.y_change = self.block_size * switch_food
                             self.x_change = 0
                             latest_key_pressed = pygame.K_DOWN
-                            print(latest_key_pressed)
-
 
 
 
@@ -293,44 +330,49 @@ class Snakegame:
             self.dis.blit(self.background_img, (0, 0))
 
 
-            self.draw_food(self.apple_img, self.foodx, self.foody, self.twirly_toggle)
-            self.draw_food(self.banana_img, self.juicy_foodx, self.juicy_foody, self.twirly_toggle)
-            self.draw_food(self.watermelon_img, self.twirly_foodx, self.twirly_foody, self.twirly_toggle)
+            self.draw_food(self.apple_img, self.foodx, self.foody, self.twirly_toggle, self.juicy_toggle, self.basic_toggle)
+            self.draw_food(self.banana_img, self.juicy_foodx, self.juicy_foody, self.twirly_toggle, self.juicy_toggle, self.basic_toggle)
+            self.draw_food(self.watermelon_img, self.twirly_foodx, self.twirly_foody, self.twirly_toggle, self.juicy_toggle, self.basic_toggle)
 
 
             if snake_list[-1]:
                 self.draw_snake_head(snake_list, latest_key_pressed)
             if snake_list[0:-1]:
                 self.draw_snake_body(snake_list)
+
             pygame.display.update()
 
             # Eat food
-            if current_headx == self.foodx and current_heady == self.foody:
+            if self.basic_toggle:
+                if current_headx == self.foodx and current_heady == self.foody:
 
-                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
-                eaten += 1
-                print("Yummy!!")
+                    snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
+                    eaten += 1
+                    print("Yummy!!")
 
-                self.foodx = self.sampled_coords[0][0]
-                self.foody = self.sampled_coords[0][1]
+                    self.foodx = self.sampled_coords[0][0]
+                    self.foody = self.sampled_coords[0][1]
             # gives + 2 points, but + 4 length of snake.
-            if current_headx == self.juicy_foodx and current_heady == self.juicy_foody:
-                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
-                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
-                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
-                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
-                eaten += 2
-                print("Mega yummy")
+            if self.juicy_toggle:
+                if current_headx == self.juicy_foodx and current_heady == self.juicy_foody:
+                    snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
+                    snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
+                    snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
+                    snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
+                    eaten += 2
+                    print("Mega yummy")
 
-                self.juicy_foodx = self.sampled_coords[1][0]
-                self.juicy_foody = self.sampled_coords[1][1]
-            if current_headx == self.twirly_foodx and current_heady == self.twirly_foody:
-                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
-                snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
-                switch_food *= -1
-                eaten += 3
-                self.twirly_foodx = self.sampled_coords[2][0]
-                self.twirly_foody = self.sampled_coords[2][1]
+                    self.juicy_foodx = self.sampled_coords[1][0]
+                    self.juicy_foody = self.sampled_coords[1][1]
+            if self.twirly_toggle:
+                if current_headx == self.twirly_foodx and current_heady == self.twirly_foody:
+                    snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
+                    snake_list.insert(0, (current_headx - self.x_change, current_heady - self.y_change))
+                    switch_food *= -1
+                    eaten += 3
+                    self.twirly_foodx = self.sampled_coords[2][0]
+                    self.twirly_foody = self.sampled_coords[2][1]
+
             self.draw_highscore(eaten)
             pygame.display.update()
             pygame.time.wait(75)

@@ -28,15 +28,19 @@ class Rockgame:
         return text_surface, text_surface.get_rect()
     def game_intro(self):
         pygame.event.clear()
-        self.dis.blit(self.intro_bg, (0, 0))
+        pygame.mouse.set_pos(200, self.dis_height // 2)
+
         self.intro = True
-        small_text = pygame.font.Font('freesansbold.ttf', 50)
-        text_surf, text_rect = self.draw_text("Rock, paper, scissors", small_text)
-        text_rect.center = ((self.dis_width / 2), (self.dis_height / 3.5))
-        self.dis.blit(text_surf, text_rect)
+
         pygame.display.update()
 
         while self.intro:
+            self.dis.blit(self.intro_bg, (0, 0))
+            small_text = pygame.font.Font('freesansbold.ttf', 50)
+            text_surf, text_rect = self.draw_text("Rock, paper, scissors", small_text)
+            text_rect.center = ((self.dis_width / 2), (self.dis_height / 3.5))
+            self.dis.blit(text_surf, text_rect)
+
             start_button = button.Button(350, 350, self.start_img, 0.20, self.dis)
             exit_button = button.Button(150, 400, self.exit_img, 0.04, self.dis)
 
@@ -51,9 +55,24 @@ class Rockgame:
                 quit()
 
             if start_button.clicked:
-                pygame.quit()
-                quit()
+                self.game_loop()
+
 
             pygame.display.update()
 
+    def game_loop(self):
+        pygame.event.clear()
+        pygame.mouse.set_pos(0,0)
+        game_exit = False
+
+
+        while not game_exit:
+
+            for event in pygame.event.get():
+
+                if event.type == pygame.QUIT:
+                    game_exit = True
+
+            self.dis.blit(self.intro_bg, (0,0))
+            pygame.display.update()
 
